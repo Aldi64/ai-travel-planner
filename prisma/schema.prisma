@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  accounts Account[]
+  sessions Session[]
+  trips    Trip[]
+
+  createdAt DateTime @default(now())
+}
+
+// --- Auth.js / Prisma adapter models ---
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --- Core domain models ---
+
+model Trip {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Search inputs
+  origin             String // display label, e.g. "Jakarta"
+  originCode         String // IATA code from the airports dataset, e.g. "CGK"
+  destinationCity    String?
+  destinationCountry String?
+  startDate          DateTime
+  endDate            DateTime
+  groupSize          Int
+  tripStyles         String[] // multi-select, e.g. ["relaxing", "cultural"]
+  currency           String // ISO 4217, e.g. "USD"; all amounts below use it
+
+  // Budget, split by category (in `currency`)
+  flightsBudget    Float
+  stayBudget       Float
+  foodBudget       Float
+  activitiesBudget Float
+
+  // AI planning state
+  status        TripStatus @default(PLANNING)
+  failureReason String? // "NO_FIT" | "AI_INVALID" | "UPSTREAM" | "UNKNOWN"
+  candidates    Json? // [{ destination, reasoning, estimatedFlightPrice, estimatedHotelPrice }]
+
+  selectedFlight Flight?
+  selectedHotel  Hotel?
+  itineraryDays  ItineraryDay[]
+
+  totalEstimatedCost Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+enum TripStatus {
+  PLANNING
+  COMPLETED
+  FAILED
+}
+
+model Flight {
+  id     String @id @default(cuid())
+  tripId String @unique
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  carrier    String
+  price      Float
+  departTime DateTime
+  arriveTime DateTime
+  bookingRef String? // provider offer id or deep link ref, useful later for v2 booking links
+}
+
+model Hotel {
+  id     String @id @default(cuid())
+  tripId String @unique
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  name          String
+  pricePerNight Float
+  totalPrice    Float
+  rating        Float?
+  address       String?
+}
+
+model ItineraryDay {
+  id        String   @id @default(cuid())
+  tripId    String
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  dayNumber Int
+  date      DateTime
+
+  items ItineraryItem[]
+
+  @@index([tripId])
+}
+
+model ItineraryItem {
+  id             String       @id @default(cuid())
+  itineraryDayId String
+  itineraryDay   ItineraryDay @relation(fields: [itineraryDayId], references: [id], onDelete: Cascade)
+
+  type          ItemType
+  name          String
+  description   String?
+  startTime     String? // "09:00", kept as a string, no timezone math needed for a single-day plan
+  estimatedCost Float
+  placeId       String? // external ref, e.g. Google Place ID
+}
+
+enum ItemType {
+  ACTIVITY
+  FOOD
+}
