@@ -16,9 +16,10 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  sessions Session[]
-  accounts Account[]
-  trips    Trip[]
+  sessions    Session[]
+  accounts    Account[]
+  trips       Trip[]
+  savedPlaces SavedPlace[]
 
   @@map("user")
 }
@@ -171,4 +172,44 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+enum AreaCategory {
+  TOURIST_AREA
+  LANDMARK
+  NATURE
+  FOOD
+  TRANSPORTATION
+}
+
+// Caches one category's results for one city, so repeat searches don't
+// re-spend Geoapify credits or Gemini calls every time.
+model AreaSearchCache {
+  id        String       @id @default(cuid())
+  city      String
+  category  AreaCategory
+  data      Json // array of place results, or the transportation summary object
+  fetchedAt DateTime     @default(now())
+
+  @@unique([city, category])
+}
+
+model SavedPlace {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  category    AreaCategory
+  source      String // "geoapify" | "ai"
+  externalId  String? // Geoapify's place id; null for AI-named food spots (no stable id)
+  name        String
+  description String?
+  address     String?
+  photoUrl    String?
+  rating      Float?
+  city        String // the city this was discovered under
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, category, name, city]) // prevents saving the same place twice
 }

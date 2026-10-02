@@ -24,6 +24,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       >
         <Link href="/plan">New trip</Link>
         <Link href="/trips">My trips</Link>
+        <Link href="/explore">Explore</Link>
+        <Link href="/saved">Saved</Link>
         <button onClick={handleSignOut} style={{ marginLeft: 'auto' }}>
           Sign out
         </button>

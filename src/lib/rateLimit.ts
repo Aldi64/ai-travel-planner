@@ -3,7 +3,10 @@ const MAX_PER_WINDOW = 5;
 
 const hits = new Map<string, number[]>();
 
-export function checkRateLimit(userId: string): {
+export function checkRateLimit(
+  userId: string,
+  p0: number,
+): {
   allowed: boolean;
   remaining: number;
 } {
