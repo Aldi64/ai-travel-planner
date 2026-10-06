@@ -23,25 +23,23 @@ export default function DayTabs({ days }: DayTabsProps) {
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
+      <div className="seg-group mb-4">
         {days.map((d) => (
           <button
             key={d.dayNumber}
             onClick={() => setActive(d.dayNumber)}
-            style={{
-              padding: '4px 12px',
-              borderRadius: 6,
-              border:
-                active === d.dayNumber ? '2px solid #333' : '1px solid #ccc',
-              background: active === d.dayNumber ? '#eee' : 'white',
-            }}
+            data-active={active === d.dayNumber}
+            className="seg-tab"
           >
             Day {d.dayNumber}
           </button>
         ))}
       </div>
-      {activeDay?.items.map((item) => (
-        <ItineraryItemRow key={item.id} item={item} />
+      {activeDay?.items.map((item, i) => (
+        <div key={item.id}>
+          {i > 0 && <hr className="perforated-divider" />}
+          <ItineraryItemRow item={item} />
+        </div>
       ))}
     </div>
   );

@@ -1,7 +1,7 @@
-import type { PrismaClient } from "../../generated/prisma/client";
-import type { FlightOffer, HotelOffer } from "../providers/types";
-import type { ItineraryResponse } from "../ai/schemas";
-import type { PlanInput } from "../ai/types";
+import type { PrismaClient } from '../../generated/prisma/client';
+import type { FlightOffer, HotelOffer } from '../providers/types';
+import type { ItineraryResponse } from '../ai/schemas';
+import type { PlanInput } from '../ai/types';
 
 function addDays(dateStr: string, days: number): Date {
   const d = new Date(`${dateStr}T00:00:00Z`);
@@ -16,17 +16,18 @@ export async function saveCompletedTrip(
   flightOffer: FlightOffer,
   hotelOffer: HotelOffer,
   itinerary: ItineraryResponse,
-  input: PlanInput
+  input: PlanInput,
 ): Promise<void> {
   const activitiesTotal = itinerary.days
     .flatMap((d) => d.items)
-    .filter((i) => i.type === "ACTIVITY")
+    .filter((i) => i.type === 'ACTIVITY')
     .reduce((sum, i) => sum + i.estimatedCost, 0);
   const foodTotal = itinerary.days
     .flatMap((d) => d.items)
-    .filter((i) => i.type === "FOOD")
+    .filter((i) => i.type === 'FOOD')
     .reduce((sum, i) => sum + i.estimatedCost, 0);
-  const totalEstimatedCost = flightOffer.price + hotelOffer.totalPrice + activitiesTotal + foodTotal;
+  const totalEstimatedCost =
+    flightOffer.price + hotelOffer.totalPrice + activitiesTotal + foodTotal;
 
   await db.$transaction(async (tx) => {
     await tx.flight.create({
@@ -76,7 +77,7 @@ export async function saveCompletedTrip(
       data: {
         destinationCity: destination.city,
         destinationCountry: destination.country,
-        status: "COMPLETED",
+        status: 'COMPLETED',
         totalEstimatedCost,
       },
     });

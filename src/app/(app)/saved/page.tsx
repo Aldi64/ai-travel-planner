@@ -11,6 +11,13 @@ const CATEGORIES: AreaCategory[] = [
   'NATURE',
   'FOOD',
 ];
+const CATEGORY_LABELS: Record<AreaCategory, string> = {
+  TOURIST_AREA: 'Tourist areas',
+  LANDMARK: 'Landmarks',
+  NATURE: 'Nature',
+  FOOD: 'Food',
+  TRANSPORTATION: 'Transportation',
+};
 
 export default async function SavedPage({
   searchParams,
@@ -30,20 +37,35 @@ export default async function SavedPage({
   });
 
   return (
-    <div style={{ maxWidth: 640, margin: '40px auto', padding: '0 16px' }}>
-      <h1>Saved places</h1>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-        <Link href="/saved">All</Link>
+    <div className="max-w-2xl mx-auto mt-10 px-4 pb-16">
+      <h1 className="text-2xl text-ink">Saved places</h1>
+
+      <div className="seg-group mt-4 mb-6">
+        <Link href="/saved" data-active={!category} className="seg-tab">
+          All
+        </Link>
         {CATEGORIES.map((c) => (
-          <Link key={c} href={`/saved?category=${c}`}>
-            {c}
+          <Link
+            key={c}
+            href={`/saved?category=${c}`}
+            data-active={category === c}
+            className="seg-tab"
+          >
+            {CATEGORY_LABELS[c]}
           </Link>
         ))}
       </div>
 
       {savedPlaces.length === 0 && (
-        <p>
-          No saved places yet. <Link href="/explore">Start exploring</Link>.
+        <p className="text-ink/60">
+          No saved places yet.{' '}
+          <Link
+            href="/explore"
+            className="text-ink underline decoration-ink/30 hover:decoration-ink"
+          >
+            Start exploring
+          </Link>
+          .
         </p>
       )}
 

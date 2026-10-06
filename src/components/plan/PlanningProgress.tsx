@@ -28,10 +28,6 @@ export default function PlanningProgress({ events }: { events: PlanEvent[] }) {
     stepEvents.filter((e) => e.status === 'started').map((e) => e.step),
   );
 
-  // "selection" is skipped by the pipeline when only one candidate fits the
-  // budget (see planTrip.ts). It never gets a started/completed event for
-  // that run, so treat "a later step has begun, but selection never did" as
-  // skipped rather than leaving it looking permanently stuck at [ ].
   const selectionIndex = STEP_ORDER.indexOf('selection');
   const laterStepStarted = STEP_ORDER.slice(selectionIndex + 1).some(
     (s) => started.has(s) || completed.has(s),
@@ -45,40 +41,56 @@ export default function PlanningProgress({ events }: { events: PlanEvent[] }) {
   for (const e of stepEvents) lastMessage[e.step] = e.message;
 
   return (
-    <div>
-      <h2>Planning your trip...</h2>
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {STEP_ORDER.map((step) => {
-          const skipped = step === 'selection' && selectionSkipped;
-          const done = completed.has(step);
-          const active = !done && !skipped && started.has(step);
+    <div className="bg-paper border border-ink/15 rounded-md p-6">
+      <h2 className="text-lg text-ink mb-4">Planning your trip...</h2>
+      {STEP_ORDER.map((step, i) => {
+        const skipped = step === 'selection' && selectionSkipped;
+        const done = completed.has(step);
+        const active = !done && !skipped && started.has(step);
 
-          const marker = done
-            ? '[x] '
-            : skipped
-              ? '[-] '
-              : active
-                ? '[>] '
-                : '[ ] ';
-
-          return (
-            <li
-              key={step}
-              style={{ marginBottom: 8, color: skipped ? '#aaa' : undefined }}
-            >
-              {marker}
-              {STEP_LABELS[step]}
-              {skipped && (
-                <span> — skipped, only one destination fit your budget</span>
-              )}
-              {!skipped && (done || active) && lastMessage[step] && (
-                <span style={{ color: '#888' }}> — {lastMessage[step]}</span>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-      <p>This usually takes under a minute.</p>
+        return (
+          <div key={step}>
+            {i > 0 && <hr className="perforated-divider" />}
+            <div className="flex items-center gap-3 py-1">
+              <span
+                className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                  done
+                    ? 'bg-stamp'
+                    : active
+                      ? 'bg-gold'
+                      : skipped
+                        ? 'bg-ink/20'
+                        : 'border border-ink/30'
+                }`}
+              />
+              <div>
+                <p
+                  className={
+                    skipped
+                      ? 'text-ink/40'
+                      : done || active
+                        ? 'text-ink'
+                        : 'text-ink/50'
+                  }
+                >
+                  {STEP_LABELS[step]}
+                </p>
+                {skipped && (
+                  <p className="text-sm text-ink/40">
+                    Skipped — only one destination fit your budget
+                  </p>
+                )}
+                {!skipped && (done || active) && lastMessage[step] && (
+                  <p className="text-sm text-ink/50">{lastMessage[step]}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+      <p className="text-sm text-ink/50 mt-4">
+        This usually takes under a minute.
+      </p>
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import { Wallet, Plane, BedDouble, Utensils, Ticket } from 'lucide-react';
+
 interface BudgetBreakdownProps {
   trip: {
     flightsBudget: number;
@@ -12,6 +14,13 @@ interface BudgetBreakdownProps {
   };
 }
 
+const ROW_ICONS = {
+  Flights: Plane,
+  Stay: BedDouble,
+  Food: Utensils,
+  Activities: Ticket,
+} as const;
+
 export default function BudgetBreakdown({ trip }: BudgetBreakdownProps) {
   const flightsSpent = trip.selectedFlight?.price ?? 0;
   const staySpent = trip.selectedHotel?.totalPrice ?? 0;
@@ -24,46 +33,80 @@ export default function BudgetBreakdown({ trip }: BudgetBreakdownProps) {
     .reduce((s, i) => s + i.estimatedCost, 0);
 
   const rows = [
-    { label: 'Flights', spent: flightsSpent, budget: trip.flightsBudget },
-    { label: 'Stay', spent: staySpent, budget: trip.stayBudget },
-    { label: 'Food', spent: foodSpent, budget: trip.foodBudget },
     {
-      label: 'Activities',
+      label: 'Flights' as const,
+      spent: flightsSpent,
+      budget: trip.flightsBudget,
+    },
+    { label: 'Stay' as const, spent: staySpent, budget: trip.stayBudget },
+    { label: 'Food' as const, spent: foodSpent, budget: trip.foodBudget },
+    {
+      label: 'Activities' as const,
       spent: activitiesSpent,
       budget: trip.activitiesBudget,
     },
   ];
+  const totalBudget =
+    trip.flightsBudget +
+    trip.stayBudget +
+    trip.foodBudget +
+    trip.activitiesBudget;
 
   return (
-    <div style={{ marginTop: 16 }}>
-      <h3>Budget</h3>
-      {rows.map((r) => (
-        <div key={r.label} style={{ marginBottom: 8 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span>{r.label}</span>
-            <span>
-              {Math.round(r.spent)} / {r.budget} {trip.currency}
-            </span>
-          </div>
-          <div style={{ background: '#eee', height: 8, borderRadius: 4 }}>
-            <div
-              style={{
-                width: `${Math.min(100, (r.spent / r.budget) * 100)}%`,
-                background: r.spent > r.budget ? '#e33' : '#3a3',
-                height: 8,
-                borderRadius: 4,
-              }}
-            />
-          </div>
+    <div className="bg-paper border border-ink/15 rounded-md p-5 mt-6">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-2">
+          <Wallet size={18} className="text-gold" />
+          <h3 className="text-lg text-ink font-semibold">Budget</h3>
         </div>
-      ))}
-      {trip.totalEstimatedCost != null && (
-        <p style={{ marginTop: 8 }}>
-          <strong>
-            Total: {Math.round(trip.totalEstimatedCost)} {trip.currency}
-          </strong>
-        </p>
-      )}
+        {trip.totalEstimatedCost != null && (
+          <span className="text-sm text-ink/70">
+            Total spent{' '}
+            <span className="data-text font-semibold text-ink">
+              {Math.round(trip.totalEstimatedCost)} / {totalBudget}{' '}
+              {trip.currency}
+            </span>
+          </span>
+        )}
+      </div>
+
+      {rows.map((r, i) => {
+        const over = r.spent > r.budget;
+        const pct = Math.min(100, (r.spent / r.budget) * 100);
+        const Icon = ROW_ICONS[r.label];
+        return (
+          <div key={r.label}>
+            {i > 0 && <hr className="perforated-divider" />}
+            <div className="flex items-center gap-3 py-1">
+              <Icon size={16} className="text-ink/50 shrink-0" />
+              <div className="flex-1">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-ink">{r.label}</span>
+                  <span className="data-text text-ink/80">
+                    {Math.round(r.spent)} / {r.budget} {trip.currency}
+                  </span>
+                </div>
+                <div className="h-2 rounded-full bg-ink/10 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${over ? 'bg-airmail' : 'bg-stamp'}`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
+              <span
+                className={`text-xs font-medium shrink-0 flex items-center gap-1 ${
+                  over ? 'text-airmail' : 'text-stamp'
+                }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${over ? 'bg-airmail' : 'bg-stamp'}`}
+                />
+                {over ? 'Over budget' : 'On track'}
+              </span>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -32,6 +32,8 @@ export default function TripForm({
     if (!startDate || !endDate) return setFormError('Pick your travel dates.');
     if (styles.length === 0)
       return setFormError('Pick at least one trip style.');
+    if (Object.values(budgets).some((b) => b <= 0))
+      return setFormError('Enter a budget greater than 0 for each category.');
     setFormError(null);
 
     onSubmit({
@@ -49,30 +51,40 @@ export default function TripForm({
   return (
     <form
       onSubmit={handleSubmit}
-      style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
+      className="bg-paper border border-ink/15 rounded-md p-6 flex flex-col gap-5"
     >
-      <h1>Plan a new trip</h1>
+      <div>
+        <h1 className="text-2xl text-ink">Plan a new trip</h1>
+        <p className="text-ink/60 text-sm mt-1">
+          Tell us your budget. We&apos;ll pick the destination.
+        </p>
+      </div>
+
       <AirportCombobox value={origin} onChange={setOrigin} />
-      <div style={{ display: 'flex', gap: 8 }}>
-        <label>
-          Start{' '}
+
+      <div className="flex gap-3">
+        <label className="flex flex-col gap-1 text-sm text-ink/70 flex-1">
+          Start
           <input
+            className="input-field"
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
         </label>
-        <label>
-          End{' '}
+        <label className="flex flex-col gap-1 text-sm text-ink/70 flex-1">
+          End
           <input
+            className="input-field"
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
         </label>
-        <label>
-          Travelers{' '}
+        <label className="flex flex-col gap-1 text-sm text-ink/70 w-24">
+          Travelers
           <input
+            className="input-field"
             type="number"
             min={1}
             max={20}
@@ -81,18 +93,24 @@ export default function TripForm({
           />
         </label>
       </div>
+
       <div>
-        <p>Trip style (pick up to 3)</p>
+        <p className="text-sm text-ink/70 mb-2">Trip style (pick up to 3)</p>
         <StyleChips value={styles} onChange={setStyles} />
       </div>
+
       <BudgetInputs
         budgets={budgets}
         currency={currency}
         onBudgetsChange={setBudgets}
         onCurrencyChange={setCurrency}
       />
-      {formError && <p style={{ color: 'red' }}>{formError}</p>}
-      <button type="submit">Find my trip</button>
+
+      {formError && <p className="text-sm text-airmail">{formError}</p>}
+
+      <button type="submit" className="btn-primary">
+        Find my trip
+      </button>
     </form>
   );
 }

@@ -127,13 +127,28 @@ export async function planTrip(
 
     // 5. itinerary
     step('itinerary', 'started', 'Building your day-by-day plan...');
-    const itinerary = await deps.ai.buildItinerary(chosen, placeList, input);
-    validateItinerary(itinerary, {
+    const itineraryCtx = {
       numberOfDays: input.numberOfDays,
       validPlaceIds: new Set(placeList.map((p) => p.id)),
       activitiesBudget: input.activitiesBudget,
       foodBudget: input.foodBudget,
-    });
+    };
+
+    let itinerary = await deps.ai.buildItinerary(chosen, placeList, input);
+    try {
+      validateItinerary(itinerary, itineraryCtx);
+    } catch (firstErr) {
+      console.error('Itinerary failed validation, retrying once:', firstErr);
+      itinerary = await deps.ai.buildItinerary(chosen, placeList, input);
+      try {
+        validateItinerary(itinerary, itineraryCtx);
+      } catch {
+        throw new PipelineError(
+          'AI_INVALID',
+          "The AI couldn't build a valid itinerary for this trip. Please try again.",
+        );
+      }
+    }
     step('itinerary', 'completed', 'Itinerary ready');
 
     // 6. persist, then finish

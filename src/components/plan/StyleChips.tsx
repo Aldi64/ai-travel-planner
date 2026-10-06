@@ -16,23 +16,24 @@ export default function StyleChips({
   }
 
   return (
-    <div>
-      {STYLES.map((s) => (
-        <button
-          type="button"
-          key={s}
-          onClick={() => toggle(s)}
-          style={{
-            marginRight: 8,
-            padding: '4px 12px',
-            borderRadius: 12,
-            border: value.includes(s) ? '2px solid #333' : '1px solid #ccc',
-            background: value.includes(s) ? '#eee' : 'white',
-          }}
-        >
-          {s}
-        </button>
-      ))}
+    <div className="flex gap-2 flex-wrap">
+      {STYLES.map((s) => {
+        const active = value.includes(s);
+        return (
+          <button
+            type="button"
+            key={s}
+            onClick={() => toggle(s)}
+            className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+              active
+                ? 'bg-ink text-paper border-ink'
+                : 'border-ink/25 text-ink/70 hover:border-ink/50'
+            }`}
+          >
+            {s}
+          </button>
+        );
+      })}
     </div>
   );
 }

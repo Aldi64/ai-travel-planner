@@ -29,11 +29,12 @@ export default function BudgetInputs({
 
   return (
     <div>
-      <label>
-        Currency{' '}
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-sm text-ink/70">Budget</span>
         <select
           value={currency}
           onChange={(e) => onCurrencyChange(e.target.value)}
+          className="input-field text-sm py-1"
         >
           {CURRENCIES.map((c) => (
             <option key={c} value={c}>
@@ -41,45 +42,42 @@ export default function BudgetInputs({
             </option>
           ))}
         </select>
-      </label>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 8,
-          marginTop: 8,
-        }}
-      >
-        <label>
-          Flights{' '}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <label className="flex flex-col gap-1 text-sm text-ink/70">
+          Flights
           <input
+            className="input-field data-text"
             type="number"
             min={0}
             value={budgets.flightsBudget}
             onChange={(e) => set('flightsBudget', e.target.value)}
           />
         </label>
-        <label>
-          Stay{' '}
+        <label className="flex flex-col gap-1 text-sm text-ink/70">
+          Stay
           <input
+            className="input-field data-text"
             type="number"
             min={0}
             value={budgets.stayBudget}
             onChange={(e) => set('stayBudget', e.target.value)}
           />
         </label>
-        <label>
-          Food{' '}
+        <label className="flex flex-col gap-1 text-sm text-ink/70">
+          Food
           <input
+            className="input-field data-text"
             type="number"
             min={0}
             value={budgets.foodBudget}
             onChange={(e) => set('foodBudget', e.target.value)}
           />
         </label>
-        <label>
-          Activities{' '}
+        <label className="flex flex-col gap-1 text-sm text-ink/70">
+          Activities
           <input
+            className="input-field data-text"
             type="number"
             min={0}
             value={budgets.activitiesBudget}
@@ -87,7 +85,7 @@ export default function BudgetInputs({
           />
         </label>
       </div>
-      <p>
+      <p className="data-text text-sm text-ink/60 mt-2">
         Total: {total} {currency}
       </p>
     </div>

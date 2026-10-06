@@ -25,10 +25,12 @@ export default function PlanPage() {
 
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
+      const fieldErrors = body.error?.fieldErrors ?? {};
+      const firstError = Object.values(fieldErrors).flat()[0];
       setError(
-        body.error?.formErrors?.join(', ') ??
-          body.error ??
-          `Request failed (${res.status})`,
+        typeof firstError === 'string'
+          ? firstError
+          : (body.error ?? `Request failed (${res.status})`),
       );
       setSubmitting(false);
       return;
@@ -69,13 +71,17 @@ export default function PlanPage() {
   }
 
   return (
-    <div style={{ maxWidth: 480, margin: '40px auto', padding: '0 16px' }}>
+    <div className="max-w-md mx-auto mt-10 px-4 pb-16">
       {!submitting && events.length === 0 && (
         <TripForm onSubmit={handleSubmit} />
       )}
       {submitting && <PlanningProgress events={events} />}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {error && !submitting && <button onClick={reset}>Try again</button>}
+      {error && <p className="text-sm text-airmail mt-3">{error}</p>}
+      {error && !submitting && (
+        <button onClick={reset} className="btn-secondary mt-2">
+          Try again
+        </button>
+      )}
     </div>
   );
 }

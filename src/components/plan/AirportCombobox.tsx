@@ -42,41 +42,36 @@ export default function AirportCombobox({
   }, [query]);
 
   return (
-    <div style={{ position: 'relative' }}>
-      <input
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setOpen(true);
-        }}
-        onFocus={() => setOpen(true)}
-        placeholder="Where are you flying from?"
-        style={{ width: '100%', padding: 8 }}
-      />
-      {open && results.length > 0 && (
-        <ul
-          style={{
-            position: 'absolute',
-            background: 'white',
-            border: '1px solid #ccc',
-            width: '100%',
-            listStyle: 'none',
-            margin: 0,
-            padding: 4,
-            zIndex: 10,
+    <div className="relative">
+      <label className="flex flex-col gap-1 text-sm text-ink/70">
+        Where are you flying from?
+        <input
+          className="input-field"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
           }}
-        >
+          onFocus={() => setOpen(true)}
+          placeholder="City or airport"
+        />
+      </label>
+      {open && results.length > 0 && (
+        <ul className="absolute z-10 w-full mt-1 bg-paper border border-ink/15 rounded-md overflow-hidden">
           {results.map((a) => (
             <li
               key={a.code}
-              style={{ padding: 6, cursor: 'pointer' }}
+              className="px-3 py-2 cursor-pointer hover:bg-ink/5 text-sm"
               onClick={() => {
                 onChange({ code: a.code, city: a.city });
                 setQuery(`${a.city} (${a.code})`);
                 setOpen(false);
               }}
             >
-              {a.city} ({a.code}) — {a.name}
+              <span className="text-ink">
+                {a.city} ({a.code})
+              </span>
+              <span className="text-ink/50"> — {a.name}</span>
             </li>
           ))}
         </ul>
